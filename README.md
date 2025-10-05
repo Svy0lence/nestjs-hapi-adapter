@@ -338,7 +338,7 @@ Asegúrate de tener estas opciones en tu `tsconfig.json`:
 
 ## 🤝 Compatibilidad
 
-- **NestJS**: >= 10.0.0
+- **NestJS**: >= 10.0.0 (compatible con v10 y v11)
 - **Hapi.js**: >= 21.0.0
 - **Node.js**: >= 16.0.0
 - **TypeScript**: >= 5.0.0
