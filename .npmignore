@@ -1,0 +1,25 @@
+# Archivos de desarrollo
+*.ts
+!*.d.ts
+tsconfig.json
+*.spec.ts
+*.test.ts
+
+# Documentación de desarrollo
+EXAMPLE.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Otros
+node_modules
+.git
+.gitignore
+
