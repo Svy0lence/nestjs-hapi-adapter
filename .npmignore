@@ -1,25 +1,30 @@
-# Archivos de desarrollo
-*.ts
-!*.d.ts
-tsconfig.json
-*.spec.ts
-*.test.ts
+# Archivos de desarrollo que NO deben publicarse a NPM
+test/
+scripts/
+coverage/
+.github/
+*.backup
+*.log
+.DS_Store
 
-# Documentación de desarrollo
-EXAMPLE.md
+# Config files
+jest.config.js
+tsconfig.json
+.gitignore
+.npmignore
+README-TESTING.md
+
+# Git
+.git
+.gitignore
 
 # IDE
 .vscode
 .idea
 *.swp
 *.swo
+*~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Otros
-node_modules
-.git
-.gitignore
-
+# Archivos de prueba
+*.test.ts
+*.spec.ts

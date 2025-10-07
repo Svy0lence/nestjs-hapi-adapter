@@ -338,10 +338,20 @@ Asegúrate de tener estas opciones en tu `tsconfig.json`:
 
 ## 🤝 Compatibilidad
 
-- **NestJS**: >= 10.0.0 (compatible con v10 y v11)
+- **NestJS**: >= 10.0.0 (compatible con v10 y v11+)
 - **Hapi.js**: >= 21.0.0
 - **Node.js**: >= 16.0.0
 - **TypeScript**: >= 5.0.0
+
+### Versiones probadas
+
+Esta librería se prueba automáticamente con:
+- ✅ NestJS: 10.0.0, 10.4.0, 11.0.0, 11.0.10, 11.1.0, 11.1.6
+- ✅ Node.js: 18.x, 20.x
+
+## 🧪 Testing
+
+Esta librería incluye tests completos de compatibilidad. Ver [test/README.md](test/README.md) para más información.
 
 ## 📝 Licencia
 
