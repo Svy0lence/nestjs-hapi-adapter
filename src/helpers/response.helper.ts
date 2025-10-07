@@ -161,6 +161,101 @@ export function createRenderMethod(nodeRes: any, renderFn: Function): void {
 }
 
 /**
+ * Objeto de respuesta que emula el comportamiento de Hapi
+ */
+class HapiResponseWrapper {
+  private _payload: any;
+  private _statusCode: number = 200;
+  private _headers: Record<string, string> = {};
+  private nodeRes: any;
+
+  constructor(payload: any, nodeRes: any) {
+    this._payload = payload;
+    this.nodeRes = nodeRes;
+  }
+
+  /**
+   * Establece el código de estado HTTP
+   */
+  code(statusCode: number): this {
+    this._statusCode = statusCode;
+    return this;
+  }
+
+  /**
+   * Establece un header
+   */
+  header(name: string, value: string): this {
+    this._headers[name] = value;
+    return this;
+  }
+
+  /**
+   * Aplica la respuesta al nodeRes
+   */
+  private _apply(): void {
+    // Aplicar status code
+    this.nodeRes.statusCode = this._statusCode;
+
+    // Aplicar headers
+    Object.entries(this._headers).forEach(([name, value]) => {
+      this.nodeRes.setHeader(name, value);
+    });
+
+    // Enviar payload
+    if (this._payload !== undefined && this._payload !== null) {
+      if (Buffer.isBuffer(this._payload)) {
+        this.nodeRes.end(this._payload);
+      } else if (typeof this._payload === 'string') {
+        if (!this.nodeRes.getHeader('content-type')) {
+          this.nodeRes.setHeader('content-type', 'text/plain; charset=utf-8');
+        }
+        this.nodeRes.end(this._payload);
+      } else {
+        if (!this.nodeRes.getHeader('content-type')) {
+          this.nodeRes.setHeader('content-type', 'application/json; charset=utf-8');
+        }
+        this.nodeRes.end(JSON.stringify(this._payload));
+      }
+    } else {
+      this.nodeRes.end();
+    }
+  }
+
+  /**
+   * Método para compatibilidad - se llama automáticamente si se devuelve
+   */
+  toString(): string {
+    this._apply();
+    return '';
+  }
+}
+
+/**
+ * Crea el método response() al estilo de Hapi
+ * 
+ * @param nodeRes - Response nativo de Node
+ */
+export function createResponseMethod(nodeRes: any): void {
+  if (typeof nodeRes.response === 'function') {
+    return;
+  }
+
+  nodeRes.response = (payload?: any) => {
+    const wrapper = new HapiResponseWrapper(payload, nodeRes);
+    
+    // Aplicar inmediatamente si no se encadena
+    setTimeout(() => {
+      if (wrapper) {
+        wrapper.toString();
+      }
+    }, 0);
+    
+    return wrapper;
+  };
+}
+
+/**
  * Enriquece el response nativo de Node con métodos compatibles con NestJS
  * 
  * @param nodeRes - Response nativo de Node
@@ -170,6 +265,7 @@ export function enrichNodeResponse(nodeRes: any, renderFn?: Function): void {
   createSendMethod(nodeRes);
   createHeaderMethod(nodeRes);
   createStateMethod(nodeRes);
+  createResponseMethod(nodeRes); // Agregar método response() al estilo Hapi
   
   // Agregar método render si se proporciona la función
   if (renderFn) {

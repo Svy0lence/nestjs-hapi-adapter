@@ -1,5 +1,5 @@
 import * as Hapi from '@hapi/hapi';
-import { RequestMethod } from '@nestjs/common';
+import { Req, RequestMethod } from '@nestjs/common';
 
 /**
  * Tipo unión para métodos HTTP de Hapi
@@ -7,20 +7,49 @@ import { RequestMethod } from '@nestjs/common';
 export type HapiHttpMethod = '*' | Hapi.RouteDefMethods | Hapi.RouteDefMethods[] | 'HEAD' | 'head';
 
 /**
- * Mapeo de RequestMethod de NestJS a métodos HTTP de Hapi
- * Nota: HEAD se excluye de RouteDefMethods en Hapi, pero se puede usar en route.method
+ * Crea el mapeo de RequestMethod de NestJS a métodos HTTP de Hapi
+ * Compatible con NestJS 10 y 11
  */
-export const REQUEST_METHOD_MAP: Record<RequestMethod, HapiHttpMethod> = {
-  [RequestMethod.ALL]: '*',
-  [RequestMethod.GET]: 'get',
-  [RequestMethod.POST]: 'post',
-  [RequestMethod.PUT]: 'put',
-  [RequestMethod.DELETE]: 'delete',
-  [RequestMethod.PATCH]: 'patch',
-  [RequestMethod.OPTIONS]: 'options',
-  [RequestMethod.HEAD]: 'head',
-  [RequestMethod.SEARCH]: 'get', // SEARCH se mapea a GET en Hapi
-} as const;
+function createRequestMethodMap(): Record<number, HapiHttpMethod> {
+  const map: Record<number, HapiHttpMethod> = {
+    [RequestMethod.ALL]: '*',
+    [RequestMethod.GET]: 'get',
+    [RequestMethod.POST]: 'post',
+    [RequestMethod.PUT]: 'put',
+    [RequestMethod.DELETE]: 'delete',
+    [RequestMethod.PATCH]: 'patch',
+    [RequestMethod.OPTIONS]: 'options',
+    [RequestMethod.HEAD]: 'head',
+    [RequestMethod.SEARCH]: 'get', // SEARCH se mapea a GET en Hapi
+  };
+
+  // Métodos adicionales de NestJS v11 (WebDAV)
+  // Solo se agregan si existen en la versión instalada
+  const v11Methods: Array<[string, string]> = [
+    ['PROPFIND', 'propfind'],
+    ['PROPPATCH', 'proppatch'],
+    ['MKCOL', 'mkcol'],
+    ['COPY', 'copy'],
+    ['MOVE', 'move'],
+    ['LOCK', 'lock'],
+    ['UNLOCK', 'unlock'],
+  ];
+
+  v11Methods.forEach(([key, value]) => {
+    const methodValue = (RequestMethod as any)[key];
+    if (methodValue !== undefined) {
+      map[methodValue] = value as HapiHttpMethod;
+    }
+  });
+
+  return map;
+}
+
+/**
+ * Mapeo de RequestMethod de NestJS a métodos HTTP de Hapi
+ * Compatible con NestJS 10 y 11
+ */
+export const REQUEST_METHOD_MAP = createRequestMethodMap();
 
 /**
  * Convierte un método de string a formato Hapi

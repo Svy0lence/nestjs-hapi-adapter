@@ -67,6 +67,9 @@ export function enrichNodeRequest(req: Hapi.Request): void {
   const contentType = req.headers['content-type'] || '';
   const payload: any = (req as any).payload;
 
+  // Guardar referencia al payload original de Hapi
+  nodeReq.payload = payload;
+
   // Query params y route params
   nodeReq.query = req.query;
   nodeReq.params = req.params;

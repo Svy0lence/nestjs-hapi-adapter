@@ -6,6 +6,7 @@ import {
 import { NestApplicationOptions } from '@nestjs/common';
 import { RequestMethod, VersioningOptions } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
+import { HttpServer } from '@nestjs/common/interfaces';
 import * as Hapi from '@hapi/hapi';
 
 // Helpers internos
@@ -53,11 +54,10 @@ const DEFAULT_HAPI_CONFIG: Hapi.ServerOptions = {
   },
 };
 
-export class HapiAdapter extends AbstractHttpAdapter<
-  Hapi.Server,
-  Hapi.Request,
-  Hapi.ResponseToolkit
-> {
+export class HapiAdapter 
+  extends AbstractHttpAdapter<Hapi.Server, Hapi.Request, Hapi.ResponseToolkit> 
+  implements HttpServer<Hapi.Request, Hapi.ResponseToolkit, Hapi.Server> 
+{
   constructor(instance?: Hapi.Server) {
     super(instance || new Hapi.Server(DEFAULT_HAPI_CONFIG));
     this.httpServer = this.instance;
@@ -480,24 +480,36 @@ export class HapiAdapter extends AbstractHttpAdapter<
 
   /**
    * Configura el motor de plantillas
-   * @param engine - Motor a usar (hbs, ejs, pug, etc.)
-   * @param options - Opciones adicionales del motor
+   * @param engineOrOptions - Motor a usar (hbs, ejs, pug, etc.) o un objeto con opciones
+   * @param options - Opciones adicionales del motor (opcional)
    * 
    * @example
-   * // Opción 1: Carga automática (requiere dependencias instaladas)
-   * await app.setViewEngine('hbs');
+   * // Uso síncrono (compatible con interfaz HttpServer de NestJS)
+   * app.getHttpAdapter().setViewEngine('hbs');
    * 
    * @example
-   * // Opción 2: Pasar dependencias manualmente
-   * const Vision = require('@hapi/vision');
-   * const handlebars = require('handlebars');
-   * await app.setViewEngine('hbs', { 
-   *   vision: Vision,
-   *   viewEngine: handlebars 
-   * });
+   * // Uso asíncrono (espera a que la configuración termine)
+   * await app.getHttpAdapter().setViewEngine('hbs');
+   * 
+   * @note Este método retorna 'this' inmediatamente para cumplir con HttpServer,
+   * pero la configuración del motor ocurre de forma asíncrona en segundo plano.
+   * Si necesitas esperar a que termine, puedes usar await.
    */
-  async setViewEngine(engine: ViewEngine, options?: any): Promise<this> {
-    await configureViewEngine(engine, options);
+  setViewEngine(engineOrOptions: any, options?: any): this {
+    const engine = typeof engineOrOptions === 'string' || typeof engineOrOptions === 'number' 
+      ? engineOrOptions 
+      : engineOrOptions;
+    const opts = typeof engineOrOptions === 'string' || typeof engineOrOptions === 'number' 
+      ? options 
+      : undefined;
+    
+    // Configurar de forma asíncrona en segundo plano
+    // Guardar la promesa por si el usuario quiere await
+    const promise = configureViewEngine(engine, opts);
+    
+    // Agregar la promesa como propiedad oculta para que pueda ser awaited si se desea
+    (this as any)._viewEnginePromise = promise;
+    
     return this;
   }
 
