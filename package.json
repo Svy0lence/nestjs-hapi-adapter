@@ -1,6 +1,6 @@
 {
   "name": "nestjs-hapi-adapter",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Adaptador HTTP profesional para usar Hapi.js como servidor en aplicaciones NestJS con soporte completo para CORS, Swagger, vistas (HBS/EJS/Pug) y todas las características de NestJS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

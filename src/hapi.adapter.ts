@@ -88,7 +88,19 @@ export class HapiAdapter
   use(...args: any[]): any {
     const fn = typeof args[0] === 'function' ? args[0] : args[1];
     this.httpServer.ext('onRequest', async (request, h) => {
-      await fn(request as Hapi.Request, h as Hapi.ResponseToolkit, () => {});
+      // Extraer request/response nativos de Node.js
+      const nodeReq: any = request.raw.req;
+      const nodeRes: any = request.raw.res;
+
+      // Enriquecer request con datos de Hapi
+      enrichNodeRequest(request);
+
+      // Enriquecer response con métodos compatibles con NestJS
+      enrichNodeResponse(nodeRes, this.render.bind(this));
+
+      // Llamar al middleware con los objetos nativos enriquecidos
+      await fn(nodeReq, nodeRes, () => {});
+      
       return h.continue;
     });
   }
